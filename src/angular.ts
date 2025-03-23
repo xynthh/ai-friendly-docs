@@ -1,6 +1,7 @@
 import { generateAiFriendlyAngularDocs } from "@features/angular-docs/generateAiFriendlyAngularDocs";
 import { HuggingFaceEmbedding } from "@llamaindex/huggingface";
 import { findMarkdownFiles } from "@shared/file-utils/findMarkdownFiles";
+import { cloneRepository } from "@shared/github/cloneRepository";
 import { createCollectionFromMarkdownFiles } from "@shared/llamaindex/createCollectionFromMarkdownFiles";
 import { Settings } from "llamaindex";
 
@@ -22,12 +23,23 @@ import { Settings } from "llamaindex";
  */
 async function main() {
   /** Angular version to process */
-  const version = "19.2.2";
+  const version = "19.2.3";
+  /** Repository directory */
+  const repoDir = `./cloned-repos/angular-${version}`;
   /** Source directory containing original Angular documentation */
-  const sourceDir = `./cloned-repos/angular-${version}/adev/src/content`;
+  const sourceDir = `${repoDir}/adev/src/content`;
   /** Target directory where AI-friendly documentation will be written */
   const targetDir = `./ai-friendly-docs/angular-${version}`;
+
   try {
+    // Clone the Angular repository with the specified version
+    await cloneRepository({
+      owner: "angular",
+      repo: "angular",
+      version: version,
+      targetDir: repoDir,
+      depth: 1,
+    });
     await generateAiFriendlyAngularDocs({
       sourceDir,
       targetDir,
@@ -38,8 +50,7 @@ async function main() {
 
     // Configure embedding model for vector generation
     Settings.embedModel = new HuggingFaceEmbedding({
-      // modelType: "Xenova/multilingual-e5-small", // 128M
-      modelType: "onnx-community/gte-multilingual-base", // 305M
+      modelType: "Xenova/all-MiniLM-L6-v2",
     });
 
     // Create vector embeddings and store in Qdrant collection

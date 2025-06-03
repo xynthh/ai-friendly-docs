@@ -2,33 +2,41 @@ import { generateAiFriendlyAngularDocs } from "@features/angular-docs/generateAi
 import { HuggingFaceEmbedding } from "@llamaindex/huggingface";
 import { findMarkdownFiles } from "@shared/file-utils/findMarkdownFiles";
 import { cloneRepository } from "@shared/github/cloneRepository";
-import { getLatestStableRelease } from "@shared/github/getLatestRelease";
+import { getLatestStableRelease, getLatestAnyRelease } from "@shared/github/getLatestRelease";
 import { createCollectionFromMarkdownFiles } from "@shared/llamaindex/createCollectionFromMarkdownFiles";
 import { Settings } from "llamaindex";
 
 /**
- * Main entry point for the AI-friendly Angular documentation generation script.
- * Creates documentation and vector embeddings for Angular framework.
+ * Enhanced Angular documentation generation script with version selection options.
+ * Supports latest stable, latest any (including prereleases), or specific version.
  *
- * @remarks
- * This script performs three main operations:
- * 1. Fetches the latest Angular release version from GitHub API
- * 2. Generates AI-friendly documentation from Angular source files
- * 3. Creates vector embeddings and stores them in a Qdrant collection
- *
- * Uses default configuration settings defined in the feature.
- *
- * @returns Promise that resolves when the process completes
- * @throws Error if documentation generation or embedding creation fails
- * @see generateAiFriendlyAngularDocs for the main transformation logic
- * @see createCollectionFromMarkdownFiles for the embedding process
+ * Usage:
+ * - No arguments: Uses latest stable release
+ * - --latest: Uses latest stable release (same as no arguments)
+ * - --latest-any: Uses latest release (including prereleases)
+ * - --version=X.X.X: Uses specific version
  */
 async function main() {
   try {
-    // Fetch the latest stable Angular release version
-    console.log("Fetching latest Angular release version...");
-    const version = await getLatestStableRelease("angular", "angular");
-    console.log(`Latest Angular version: ${version}`);
+    let version: string;
+    const args = process.argv.slice(2);
+    
+    // Parse command line arguments
+    if (args.includes('--latest-any')) {
+      console.log("Fetching latest Angular release (including prereleases)...");
+      version = await getLatestAnyRelease("angular", "angular");
+    } else {
+      const versionArg = args.find(arg => arg.startsWith('--version='));
+      if (versionArg) {
+        version = versionArg.split('=')[1];
+        console.log(`Using specified Angular version: ${version}`);
+      } else {
+        console.log("Fetching latest stable Angular release...");
+        version = await getLatestStableRelease("angular", "angular");
+      }
+    }
+    
+    console.log(`Processing Angular version: ${version}`);
     
     /** Repository directory */
     const repoDir = `./cloned-repos/angular-${version}`;
@@ -37,7 +45,7 @@ async function main() {
     /** Target directory where AI-friendly documentation will be written */
     const targetDir = `./ai-friendly-docs/angular-${version}`;
 
-    // Clone the Angular repository with the latest version
+    // Clone the Angular repository with the specified version
     await cloneRepository({
       owner: "angular",
       repo: "angular",
@@ -78,5 +86,4 @@ async function main() {
 }
 
 // Execute the documentation generation process
-// This is the entry point for the script
 main();

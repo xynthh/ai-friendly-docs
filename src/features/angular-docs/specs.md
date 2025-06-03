@@ -36,6 +36,7 @@ The feature follows a modular design with specialized functions for different as
 - Individual section processors for different types of Angular documentation
 
 The consolidation process:
+
 1. Cleans and creates the target directory structure
 2. Processes each documentation section based on its type
 3. Generates a combined file with all documentation
@@ -44,6 +45,7 @@ The consolidation process:
 ## Dependencies
 
 This feature depends on:
+
 - Node.js file system module for file operations
 - Path module for path manipulation
 

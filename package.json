@@ -12,6 +12,9 @@
   },
   "scripts": {
     "generate:angular": "pnpm exec tsx --tsconfig=./tsconfig.json --env-file=./.env src/angular.ts",
+    "generate:angular:latest": "pnpm exec tsx --tsconfig=./tsconfig.json --env-file=./.env src/angular-with-version.ts --latest",
+    "generate:angular:latest-any": "pnpm exec tsx --tsconfig=./tsconfig.json --env-file=./.env src/angular-with-version.ts --latest-any",
+    "generate:angular:version": "pnpm exec tsx --tsconfig=./tsconfig.json --env-file=./.env src/angular-with-version.ts --version=",
     "tsc-noemit": "pnpm exec tsc --noEmit --project ./tsconfig.json --pretty true"
   }
 }
